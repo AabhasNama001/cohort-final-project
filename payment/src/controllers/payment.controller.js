@@ -17,8 +17,7 @@ async function createPayment(req, res) {
     const orderId = req.params.orderId;
 
     const orderResponse = await axios.get(
-      "http://localhost:3003/api/orders/" +
-        orderId,
+      "https://cohort-final-project-orders.onrender.com/api/orders/" + orderId,
       {
         headers: {
           Authorization: `Bearer ${token}`,

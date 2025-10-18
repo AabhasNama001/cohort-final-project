@@ -23,6 +23,6 @@ npm run dev
 ```
 
 Notes
-- API base URL is proxied to `http://localhost:3000` by Vite config. If your backend runs on a different host/port, update `vite.config.js` or set `VITE_API_BASE` in `.env`.
+- API base URL is proxied to `https://cohort-final-project-cart.onrender.com/` by Vite config. If your backend runs on a different host/port, update `vite.config.js` or set `VITE_API_BASE` in `.env`.
 - The scaffold includes `services/` for API calls and `contexts/` for Auth and Products. Create/Cart pages are placeholders.
 - This is a starting point; add forms, validations, and additional components as needed.

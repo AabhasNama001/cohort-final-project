@@ -3,7 +3,7 @@ import axios from "axios";
 // Base URL handling
 const API_BASE = import.meta.env.DEV
   ? "" // During dev, use Vite proxy
-  : import.meta.env.VITE_API_BASE || "http://localhost:3000";
+  : import.meta.env.VITE_API_BASE || "https://cohort-final-project-auth.onrender.com";
 
 const api = axios.create({
   baseURL: API_BASE + "/api",

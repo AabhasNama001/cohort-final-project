@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -8,46 +8,47 @@ export default defineConfig({
     port: 5173,
     proxy: {
       // route-by-path to each microservice port
-      '^/api/auth': {
-        target: 'http://localhost:3000',
+      "^/api/auth": {
+        target: "https://cohort-final-project-auth.onrender.com",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/auth/, '/api/auth'),
+        rewrite: (path) => path.replace(/^\/api\/auth/, "/api/auth"),
       },
-      '^/api/products': {
-        target: 'http://localhost:3001',
+      "^/api/products": {
+        target: "https://cohort-final-project-product.onrender.com",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/products/, '/api/products'),
+        rewrite: (path) => path.replace(/^\/api\/products/, "/api/products"),
       },
-      '^/api/cart': {
-        target: 'http://localhost:3002',
+      "^/api/cart": {
+        target: "https://cohort-final-project-cart.onrender.com",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/cart/, '/api/cart'),
+        rewrite: (path) => path.replace(/^\/api\/cart/, "/api/cart"),
       },
-      '^/api/orders': {
-        target: 'http://localhost:3003',
+      "^/api/orders": {
+        target: "https://cohort-final-project-orders.onrender.com",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/orders/, '/api/orders'),
+        rewrite: (path) => path.replace(/^\/api\/orders/, "/api/orders"),
       },
-      '^/api/payment': {
-        target: 'http://localhost:3004',
+      "^/api/payment": {
+        target: "https://cohort-final-project-payment.onrender.com",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/payment/, '/api/payment'),
+        rewrite: (path) => path.replace(/^\/api\/payment/, "/api/payment"),
       },
-      '^/api/ai-buddy': {
-        target: 'http://localhost:3005',
+      "^/api/ai-buddy": {
+        target: "https://cohort-final-project-ai-buddy.onrender.com",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/ai-buddy/, '/api/ai-buddy'),
+        rewrite: (path) => path.replace(/^\/api\/ai-buddy/, "/api/ai-buddy"),
       },
-      '^/api/notifications': {
-        target: 'http://localhost:3006',
+      "^/api/notifications": {
+        target: "https://cohort-final-project-notification.onrender.com",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/notifications/, '/api/notifications'),
+        rewrite: (path) =>
+          path.replace(/^\/api\/notifications/, "/api/notifications"),
       },
-      '^/api/seller': {
-        target: 'http://localhost:3007',
+      "^/api/seller": {
+        target: "https://cohort-final-project-seller.onrender.com/",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/seller/, '/api/seller'),
+        rewrite: (path) => path.replace(/^\/api\/seller/, "/api/seller"),
       },
-    }
-  }
-})
+    },
+  },
+});

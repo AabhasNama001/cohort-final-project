@@ -18,9 +18,12 @@ async function createOrder(req, res) {
   }
 
   try {
-    const cartResponse = await axios.get(`http://localhost:3002/api/cart`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const cartResponse = await axios.get(
+      `https://cohort-final-project-cart.onrender.com/api/cart`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
 
     const cart = cartResponse.data?.cart;
     if (!cart || !Array.isArray(cart.items) || cart.items.length === 0) {
@@ -30,9 +33,12 @@ async function createOrder(req, res) {
     // fetch product details in parallel
     const fetchResults = await Promise.allSettled(
       cart.items.map((item) =>
-        axios.get(`http://localhost:3001/api/products/${item.productId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        axios.get(
+          `https://cohort-final-project-product.onrender.com/api/products/${item.productId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
       )
     );
 
@@ -63,11 +69,9 @@ async function createOrder(req, res) {
           .json({ message: `Product ${item.productId} not found` });
       }
       if (product.stock < item.quantity) {
-        return res
-          .status(409)
-          .json({
-            message: `Product ${product.title} is out of stock or insufficient`,
-          });
+        return res.status(409).json({
+          message: `Product ${product.title} is out of stock or insufficient`,
+        });
       }
 
       const itemTotal = product.price.amount * item.quantity;
