@@ -6,7 +6,7 @@ const authRoutes = require("./routes/auth.routes");
 const app = express();
 app.use(express.json());
 // Allow Vite dev server origin and enable credentials for cookie-based auth
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({ origin: 'https://tubular-chimera-c62428.netlify.app', credentials: true }));
 app.use(cookieParser());
 
 /* Health Check API */
