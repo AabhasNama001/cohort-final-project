@@ -10,12 +10,11 @@ export function ProductProvider({ children }) {
   const loadProducts = async (params) => {
     setLoading(true);
     try {
-      // 'res' is an OBJECT from your service, e.g., { products: [...] }
+      // 'res' is an OBJECT from your service, e.g., { message: "...", data: [...] }
       const res = await productService.fetchProducts(params);
 
-      // THE REAL FIX: Access the 'products' array property from the 'res' object.
-      // This will fix the "l.map is not a function" error.
-      setProducts(res.products || []);
+      // THE FIX: Access the 'data' property from the response object.
+      setProducts(res.data || []);
     } catch (err) {
       console.error("Failed to load products:", err);
       setProducts([]); // Set to empty array on error
