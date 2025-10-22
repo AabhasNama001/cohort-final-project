@@ -1,12 +1,15 @@
 const express = require("express");
+const cors = require("cors");
 
 const app = express();
+app.use(express.json());
 
-app.use(express.json())
+// Allow frontend origin
+app.use(cors({ origin: "https://shoppp-ease.netlify.app", credentials: true }));
 
 // mount AI routes
-const aiRoutes = require('./routes/ai.routes')
-app.use('/api/ai-buddy', aiRoutes)
+const aiRoutes = require("./routes/ai.routes");
+app.use("/api/ai-buddy", aiRoutes);
 
 /* Health Check API */
 app.get("/", (req, res) => {
