@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import api from "../services/api";
+// THE FIX 1: Import the new service file, not api.js
+import * as aiBuddyService from "../services/ai-buddy.service";
 
 export default function AiBuddyPage() {
   const [messages, setMessages] = useState(() => {
@@ -24,13 +25,15 @@ export default function AiBuddyPage() {
     setQuery("");
     setLoading(true);
     try {
-      const res = await api.get("/ai-buddy/search", {
-        params: { q: userMsg.text },
-      });
+      // THE FIX 2: Use the new service function
+      const data = await aiBuddyService.searchAI(userMsg.text);
+
+      // THE FIX 3: 'data' is already the response data, not the full 'res' object
       const reply =
-        res.data && res.data.ok
-          ? res.data.reply
-          : res.data?.error || "AI could not respond right now.";
+        data && data.ok
+          ? data.reply
+          : data?.error || "AI could not respond right now.";
+
       setMessages((prev) => [...prev, { role: "ai", text: reply }]);
     } catch (err) {
       setMessages((prev) => [
