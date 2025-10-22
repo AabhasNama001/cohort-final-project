@@ -5,7 +5,8 @@ import { sellerApi } from "./api";
  * Fetches seller-specific metrics.
  */
 export async function getSellerMetrics() {
-  const res = await sellerApi.get("/metrics");
+  // THE FIX: Added the full path to match your backend route
+  const res = await sellerApi.get("/seller/dashboard/metrics");
   return res.data;
 }
 
@@ -13,7 +14,8 @@ export async function getSellerMetrics() {
  * Fetches orders for the seller.
  */
 export async function getSellerOrders() {
-  const res = await sellerApi.get("/orders");
+  // THE FIX: Added the full path to match your backend route
+  const res = await sellerApi.get("/seller/dashboard/orders");
   return res.data;
 }
 
@@ -21,6 +23,7 @@ export async function getSellerOrders() {
  * Fetches products belonging to the seller.
  */
 export async function getSellerProducts() {
-  const res = await sellerApi.get("/products");
+  // THE FIX: Added the full path to match your backend route
+  const res = await sellerApi.get("/seller/dashboard/products");
   return res.data;
 }
