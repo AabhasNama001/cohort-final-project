@@ -1,18 +1,24 @@
-import api from "./api";
+// WRONG: import api from "./api";
+// RIGHT: Import the specific 'authApi'
+import { authApi } from "./api";
 
 export async function login(credentials) {
-  return api.post("/auth/login", credentials);
+  // Use authApi, not api
+  return authApi.post("/auth/login", credentials);
 }
 
 export async function register(data) {
-  return api.post("/auth/register", data);
+  // Use authApi, not api
+  return authApi.post("/auth/register", data);
 }
 
 export async function me() {
-  return api.get("/auth/me");
+  // Use authApi, not api
+  return authApi.get("/auth/me");
 }
 
 export async function logout() {
-  const res = await api.get("/auth/logout");
+  // Use authApi, not api
+  const res = await authApi.get("/auth/logout");
   return res.data;
 }

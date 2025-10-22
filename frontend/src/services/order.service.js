@@ -1,13 +1,17 @@
-import api from "./api";
+// WRONG: import api from "./api";
+// RIGHT: Import the specific 'orderApi'
+import { orderApi } from "./api";
 
 export async function getMyOrders() {
-  const res = await api.get("/orders/me");
+  // Use orderApi, not api
+  const res = await orderApi.get("/orders/me");
   return res.data;
 }
 
 export async function createOrder(payload) {
   try {
-    const res = await api.post("/orders", payload);
+    // Use orderApi, not api
+    const res = await orderApi.post("/orders", payload);
     return res.data;
   } catch (err) {
     console.error("Order creation failed:", err);
@@ -16,6 +20,7 @@ export async function createOrder(payload) {
 }
 
 export async function getOrderById(id) {
-  const res = await api.get(`/orders/${id}`);
+  // Use orderApi, not api
+  const res = await orderApi.get(`/orders/${id}`);
   return res.data;
 }

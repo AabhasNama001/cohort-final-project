@@ -1,16 +1,21 @@
-import api from './api'
+// WRONG: import api from './api'
+// RIGHT: Import the specific 'productApi'
+import { productApi } from "./api";
 
 export async function fetchProducts(params = {}) {
-  const res = await api.get('/products', { params })
-  return res.data
+  // Use productApi, not api
+  const res = await productApi.get("/products", { params });
+  return res.data;
 }
 
 export async function fetchProductById(id) {
-  const res = await api.get(`/products/${id}`)
-  return res.data
+  // Use productApi, not api
+  const res = await productApi.get(`/products/${id}`);
+  return res.data;
 }
 
 export async function createProduct(formData) {
-  const res = await api.post('/products', formData)
-  return res.data
+  // Use productApi, not api
+  const res = await productApi.post("/products", formData);
+  return res.data;
 }

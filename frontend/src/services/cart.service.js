@@ -1,16 +1,21 @@
-import api from './api'
+// WRONG: import api from './api';
+// RIGHT: Import the specific 'cartApi'
+import { cartApi } from "./api";
 
 export async function getCart() {
-  const res = await api.get('/cart')
-  return res.data
+  // Use cartApi, not api
+  const res = await cartApi.get("/cart");
+  return res.data;
 }
 
 export async function addToCart(item) {
-  const res = await api.post('/cart/items', item)
-  return res.data
+  // Use cartApi, not api
+  const res = await cartApi.post("/cart/items", item);
+  return res.data;
 }
 
 export async function updateCartItem(itemId, data) {
-  const res = await api.patch(`/cart/items/${itemId}`, data)
-  return res.data
+  // Use cartApi, not api
+  const res = await cartApi.patch(`/cart/items/${itemId}`, data);
+  return res.data;
 }
