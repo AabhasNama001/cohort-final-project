@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 // THE FIX 1: Import the new service file, not api.js
-import * as aiBuddyService from "../services/ai-buddy.service";
+import aiBuddyService from "../services/aiBuddy.service";
 
 export default function AiBuddyPage() {
   const [messages, setMessages] = useState(() => {
