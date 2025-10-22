@@ -81,4 +81,3 @@ export const notificationApi = createApiClient(
   import.meta.env.VITE_NOTIFICATION_API_URL
 );
 export const sellerApi = createApiClient(import.meta.env.VITE_SELLER_API_URL);
-yy
