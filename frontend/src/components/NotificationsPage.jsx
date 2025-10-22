@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import api from "../services/api";
+// THE FIX: Import the new service file
+import * as notificationService from "../services/notification.service";
 import { FaBell } from "react-icons/fa";
 
 function timeAgo(ts) {
@@ -18,8 +19,10 @@ export default function NotificationsPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await api.get("/notifications");
-        setNotes(res.data || []);
+        // THE FIX: Use the new service function
+        const data = await notificationService.getNotifications();
+        // THE FIX: 'data' is already the array, not the response
+        setNotes(data || []);
       } catch (err) {
         setNotes([]);
       }
