@@ -29,10 +29,18 @@ export default function AiBuddyPage() {
       const data = await aiBuddyService.searchAI(userMsg.text);
 
       // THE FIX 3: 'data' is already the response data, not the full 'res' object
-      const reply =
+      let reply =
         data && data.ok
           ? data.reply
           : data?.error || "AI could not respond right now.";
+
+      // 🧠 if backend sent a JSON string, parse it safely
+      try {
+        const parsed = JSON.parse(reply);
+        if (parsed.reply) reply = parsed.reply;
+      } catch (err) {
+        // ignore if it's not JSON
+      }
 
       setMessages((prev) => [...prev, { role: "ai", text: reply }]);
     } catch (err) {
