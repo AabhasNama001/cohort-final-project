@@ -4,6 +4,7 @@ import ProductCard from "./ProductCard";
 import ProductDetail from "./ProductDetail";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useNavigate } from "react-router-dom";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -11,6 +12,7 @@ export default function HomePage() {
   const { products, loading, loadProducts } = useContext(ProductContext);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
+  const navigate = useNavigate();
 
   const categoryRefs = useRef([]);
   const bannerRef = useRef(null);
@@ -114,6 +116,10 @@ export default function HomePage() {
       </div>
     );
 
+  const RedirectToProductsPage = () => {
+    navigate("/products");
+  };
+
   return (
     <div className="min-h-screen p-6 sm:p-10">
       {/* ---------------- BANNER ---------------- */}
@@ -180,6 +186,7 @@ export default function HomePage() {
           ].map((cat, i) => (
             <div
               key={cat.name}
+              onClick={RedirectToProductsPage}
               ref={(el) => (categoryRefs.current[i] = el)}
               className="group relative bg-gradient-to-br from-white to-gray-100 border border-gray-200 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all p-6 flex flex-col justify-center items-center"
             >
@@ -197,7 +204,7 @@ export default function HomePage() {
       </section>
 
       {/* ---------------- MARQUEE ---------------- */}
-      <div className="overflow-hidden w-full bg-transparent py-4">
+      <div className="overflow-hidden w-full bg-transparent py-20">
         <div className="marquee">
           <div className="track">
             <span className="text-4xl md:text-6xl font-serif mx-8">
