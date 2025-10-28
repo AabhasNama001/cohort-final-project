@@ -7,8 +7,9 @@ import { aiBuddyApi } from "./api";
  */
 export async function searchAI(query) {
   // Calls GET https://[your-ai-buddy-service-url].onrender.com/api/search
-  const res = await aiBuddyApi.get("/search", {
+  const res = await aiBuddyApi.get("/ai-buddy/search", {
     params: { q: query },
   });
+
   return res.data;
 }
