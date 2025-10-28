@@ -14,6 +14,7 @@ export default function HomePage() {
 
   const categoryRefs = useRef([]);
   const bannerRef = useRef(null);
+  const collageRefs = useRef([]);
   const testimonialRefs = useRef([]);
 
   useEffect(() => {
@@ -38,23 +39,18 @@ export default function HomePage() {
       );
     });
 
-    // Animate featured banner with fade-in + shimmer
+    // Animate featured banner
     if (bannerRef.current) {
       const img = bannerRef.current.querySelector("img");
       const overlay = bannerRef.current.querySelector("div");
 
-      // Fade-in image
       gsap.to(img, { opacity: 1, duration: 1.2, ease: "power2.out" });
-
-      // Fade-in overlay text with slight delay
       gsap.to(overlay, {
         opacity: 1,
         duration: 1.2,
         ease: "power2.out",
         delay: 0.3,
       });
-
-      // Add shimmer effect to image
       gsap.fromTo(
         img,
         { filter: "brightness(1)" },
@@ -68,6 +64,26 @@ export default function HomePage() {
         }
       );
     }
+
+    // Animate photo collage
+    collageRefs.current.forEach((el, i) => {
+      gsap.fromTo(
+        el,
+        { opacity: 0, scale: 0.9, y: 30 },
+        {
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          duration: 0.8,
+          delay: i * 0.15,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: el,
+            start: "top 85%",
+          },
+        }
+      );
+    });
 
     // Animate testimonials
     testimonialRefs.current.forEach((el, i) => {
@@ -100,13 +116,13 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen p-6 sm:p-10">
-      {/* ---------------- BANNER WITH FADE-IN + SHIMMER ---------------- */}
+      {/* ---------------- BANNER ---------------- */}
       <section
         className="relative mb-16 max-w-6xl mx-auto overflow-hidden rounded-3xl shadow-xl"
         ref={bannerRef}
       >
         <img
-          src="https://images.unsplash.com/photo-1539185441755-769473a23570?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8c2hvZXN8ZW58MHwwfDB8fHww&auto=format&fit=crop&q=60&w=600"
+          src="https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&q=60&w=1200"
           alt="Featured"
           className="w-full h-[300px] object-cover opacity-0"
         />
@@ -134,32 +150,32 @@ export default function HomePage() {
             {
               name: "T-shirt",
               image:
-                "https://plus.unsplash.com/premium_photo-1718913936342-eaafff98834b?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8dHNoaXJ0fGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=600",
+                "https://plus.unsplash.com/premium_photo-1718913936342-eaafff98834b?auto=format&fit=crop&q=60&w=600",
             },
             {
               name: "Jackets",
               image:
-                "https://plus.unsplash.com/premium_photo-1760179325525-ec3edff26677?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDE2fHx8ZW58MHx8fHx8&auto=format&fit=crop&q=60&w=600",
+                "https://plus.unsplash.com/premium_photo-1760179325525-ec3edff26677?auto=format&fit=crop&q=60&w=600",
             },
             {
               name: "Shoes",
               image:
-                "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2hvZXN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&q=60&w=600",
+                "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=60&w=600",
             },
             {
               name: "Bags",
               image:
-                "https://plus.unsplash.com/premium_photo-1678739395192-bfdd13322d34?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFnc3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=600",
+                "https://plus.unsplash.com/premium_photo-1678739395192-bfdd13322d34?auto=format&fit=crop&q=60&w=600",
             },
             {
               name: "Jeans",
               image:
-                "https://images.unsplash.com/photo-1714729382668-7bc3bb261662?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fGplYW5zfGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=600",
+                "https://images.unsplash.com/photo-1714729382668-7bc3bb261662?auto=format&fit=crop&q=60&w=600",
             },
             {
               name: "Shirt",
               image:
-                "https://images.unsplash.com/photo-1687275160744-ef140bf5529c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDMyfHx8ZW58MHx8fHx8&auto=format&fit=crop&q=60&w=600",
+                "https://images.unsplash.com/photo-1687275160744-ef140bf5529c?auto=format&fit=crop&q=60&w=600",
             },
           ].map((cat, i) => (
             <div
@@ -180,6 +196,20 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ---------------- MARQUEE ---------------- */}
+      <div className="overflow-hidden w-full bg-transparent py-4">
+        <div className="marquee">
+          <div className="track">
+            <span className="text-4xl md:text-6xl font-serif mx-8">
+              SHOPEASE ✧ SHOPEASE ✧ SHOPEASE ✧ SHOPEASE ✧ SHOPEASE ✧ SHOPEASE ✧
+            </span>
+            <span className="text-4xl md:text-6xl font-serif mx-8">
+              SHOPEASE ✧ SHOPEASE ✧ SHOPEASE ✧ SHOPEASE ✧ SHOPEASE ✧ SHOPEASE ✧
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* ---------------- PRODUCT GRID ---------------- */}
       {products.length === 0 ? (
         <div className="p-16 text-center text-gray-500 text-lg">
@@ -193,21 +223,52 @@ export default function HomePage() {
             Latest Arrivals
           </h2>
           <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 transition-all duration-500">
-            {products.map((p, i) => (
-              <div
-                key={p._id}
-                className="animate-fadeInUp"
-                style={{
-                  animationDelay: `${i * 0.08}s`,
-                  animation: "fadeInUp 0.5s ease both",
-                }}
-              >
-                <ProductCard product={p} onView={setSelected} />
-              </div>
-            ))}
+            {products
+              .sort(() => Math.random() - 0.5)
+              .slice(0, 4)
+              .map((p, i) => (
+                <div
+                  key={p._id}
+                  style={{
+                    animationDelay: `${i * 0.08}s`,
+                    animation: "fadeInUp 0.5s ease both",
+                  }}
+                >
+                  <ProductCard product={p} onView={setSelected} />
+                </div>
+              ))}
           </div>
         </>
       )}
+
+      {/* ---------------- PHOTO COLLAGE SECTION ---------------- */}
+      <section className="max-w-6xl mx-auto my-20">
+        <h2 className="text-3xl font-bold text-gray-800 mb-10 text-center">
+          A Glimpse of Our World
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 relative">
+          {[
+            "https://ik.imagekit.io/aabhas/products/pexels-rachel-claire-5490917.jpg?updatedAt=1761647459144",
+            "https://ik.imagekit.io/aabhas/products/Gemini_Generated_Image_idkxsxidkxsxidkx.png?updatedAt=1761647329680",
+            "https://ik.imagekit.io/aabhas/products/pexels-mart-production-7679442.jpg?updatedAt=1761647958332",
+            "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&q=60&w=800",
+          ].map((src, i) => (
+            <div
+              key={i}
+              ref={(el) => (collageRefs.current[i] = el)}
+              className={`overflow-hidden rounded-2xl shadow-lg transform hover:scale-105 transition-transform ${
+                i === 1 ? "md:col-span-2 md:row-span-2" : ""
+              }`}
+            >
+              <img
+                src={src}
+                alt={`Collage ${i + 1}`}
+                className="object-cover w-full h-full"
+              />
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* ---------------- TESTIMONIALS ---------------- */}
       <section className="max-w-6xl mx-auto my-20 text-center">

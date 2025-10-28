@@ -1,31 +1,88 @@
-import React, { useState, useContext } from 'react'
-import { AuthContext } from '../contexts/AuthContext'
+import React, { useState, useEffect, useRef, useContext } from "react";
+import { AuthContext } from "../contexts/AuthContext";
+import { gsap } from "gsap";
 
 export default function AuthPage() {
-  const { login, register, logout, user } = useContext(AuthContext)
-  const [isRegister, setIsRegister] = useState(false)
+  const { login, register, logout, user } = useContext(AuthContext);
+  const [isRegister, setIsRegister] = useState(false);
 
-  // login fields
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  // Fields
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("user");
+  const [username, setUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
 
-  // register fields
-  const [username, setUsername] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [role, setRole] = useState('user')
+  const loginRef = useRef(null);
+  const registerRef = useRef(null);
+
+  // Animate page transitions
+  useEffect(() => {
+    if (isRegister) {
+      gsap.to(loginRef.current, {
+        opacity: 0,
+        x: -50,
+        duration: 0.5,
+        ease: "power2.inOut",
+        onComplete: () => {
+          gsap.set(loginRef.current, { display: "none" });
+          gsap.set(registerRef.current, { display: "block" });
+          gsap.fromTo(
+            registerRef.current,
+            { opacity: 0, x: 50 },
+            { opacity: 1, x: 0, duration: 0.6, ease: "power2.inOut" }
+          );
+        },
+      });
+    } else {
+      gsap.to(registerRef.current, {
+        opacity: 0,
+        x: 50,
+        duration: 0.5,
+        ease: "power2.inOut",
+        onComplete: () => {
+          gsap.set(registerRef.current, { display: "none" });
+          gsap.set(loginRef.current, { display: "block" });
+          gsap.fromTo(
+            loginRef.current,
+            { opacity: 0, x: -50 },
+            { opacity: 1, x: 0, duration: 0.6, ease: "power2.inOut" }
+          );
+        },
+      });
+    }
+  }, [isRegister]);
+
+  const validateLogin = () => {
+    if (!email || !password) {
+      alert("Please fill in all login fields.");
+      return false;
+    }
+    return true;
+  };
+
+  const validateRegister = () => {
+    if (!username || !firstName || !lastName || !email || !password) {
+      alert("Please fill in all registration fields.");
+      return false;
+    }
+    return true;
+  };
 
   const doLogin = async () => {
+    if (!validateLogin()) return;
     try {
-      await login({ email, password })
-      alert('Logged in')
+      await login({ email, password, role });
+      alert("Logged in successfully!");
     } catch (err) {
-      console.error(err)
-      alert('Login failed')
+      console.error(err);
+      alert("Login failed");
     }
-  }
+  };
 
   const doRegister = async () => {
+    if (!validateRegister()) return;
     try {
       await register({
         username,
@@ -33,56 +90,149 @@ export default function AuthPage() {
         password,
         fullName: { firstName, lastName },
         role,
-      })
-      alert('Registered and logged in')
+      });
+      alert("Registered and logged in!");
     } catch (err) {
-      console.error(err)
-      alert('Registration failed')
+      console.error(err);
+      alert("Registration failed");
     }
-  }
+  };
+
+  const handleKeyPress = (e, action) => {
+    if (e.key === "Enter") action();
+  };
 
   return (
-    <div className="p-4 bg-white rounded shadow max-w-md mx-auto">
+    <div className=" h-[80vh] md:h-[90vh] flex items-center justify-center px-4">
       {user ? (
-        <div>
-          <div className="font-semibold">Welcome {user.username || user.email}</div>
-          <div className="text-sm text-gray-600">Role: {user.role}</div>
-          <button onClick={logout} className="mt-3 bg-red-500 text-white px-3 py-1 rounded">Logout</button>
+        <div className="p-8 bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-md text-center border border-white/40">
+          <h2 className="text-3xl font-bold mb-2 text-indigo-700">
+            Welcome ✨
+          </h2>
+          <p className="text-gray-700 font-medium">
+            {user.username || user.email}
+          </p>
+          <p className="text-sm text-gray-500 mb-6">Role: {user.role}</p>
+          <button
+            onClick={logout}
+            className="bg-gradient-to-r from-red-500 to-pink-500 hover:opacity-90 text-white px-6 py-2 rounded-xl font-semibold shadow-md transition-all"
+          >
+            Logout
+          </button>
         </div>
       ) : (
-        <div>
-          <div className="flex gap-2 mb-4">
-            <button onClick={() => setIsRegister(false)} className={`flex-1 p-2 rounded ${!isRegister ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>Login</button>
-            <button onClick={() => setIsRegister(true)} className={`flex-1 p-2 rounded ${isRegister ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>Register</button>
+        <div className="relative w-full max-w-md bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/40">
+          {/* LOGIN CARD */}
+          <div ref={loginRef} className="p-8">
+            <h2 className="text-3xl font-extrabold text-center text-indigo-700 mb-6">
+              Welcome Back 👋
+            </h2>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => handleKeyPress(e, doLogin)}
+              className="border border-gray-300 rounded-lg px-4 py-2 w-full mb-3 focus:ring-2 focus:ring-indigo-400 outline-none"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => handleKeyPress(e, doLogin)}
+              className="border border-gray-300 rounded-lg px-4 py-2 w-full mb-3 focus:ring-2 focus:ring-indigo-400 outline-none"
+            />
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="border border-gray-300 rounded-lg px-4 py-2 w-full mb-4 focus:ring-2 focus:ring-indigo-400 outline-none"
+            >
+              <option value="user">Customer</option>
+              <option value="seller">Seller</option>
+            </select>
+            <button
+              onClick={doLogin}
+              className="bg-gradient-to-r from-indigo-500 to-blue-600 hover:opacity-90 text-white w-full py-2 rounded-lg font-semibold transition-all shadow-md"
+            >
+              Login
+            </button>
+            <p className="text-center text-gray-500 mt-4 text-sm">
+              Don’t have an account?{" "}
+              <button
+                onClick={() => setIsRegister(true)}
+                className="text-indigo-600 font-semibold hover:underline"
+              >
+                Register
+              </button>
+            </p>
           </div>
 
-          {!isRegister ? (
-            <div>
-              <input placeholder="email" value={email} onChange={e=>setEmail(e.target.value)} className="border p-2 w-full mb-2" />
-              <input placeholder="password" type="password" value={password} onChange={e=>setPassword(e.target.value)} className="border p-2 w-full mb-2" />
-              <button onClick={doLogin} className="bg-blue-600 text-white px-4 py-2 rounded">Login</button>
+          {/* REGISTER CARD */}
+          <div ref={registerRef} className="p-8 hidden">
+            <h2 className="text-3xl font-extrabold text-center text-indigo-700 mb-6">
+              Create Account ✨
+            </h2>
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              onKeyDown={(e) => handleKeyPress(e, doRegister)}
+              className="border border-gray-300 rounded-lg px-4 py-2 w-full mb-3 focus:ring-2 focus:ring-indigo-400 outline-none"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                placeholder="First Name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                onKeyDown={(e) => handleKeyPress(e, doRegister)}
+                className="border border-gray-300 rounded-lg px-4 py-2 w-full focus:ring-2 focus:ring-indigo-400 outline-none"
+              />
+              <input
+                type="text"
+                placeholder="Last Name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                onKeyDown={(e) => handleKeyPress(e, doRegister)}
+                className="border border-gray-300 rounded-lg px-4 py-2 w-full focus:ring-2 focus:ring-indigo-400 outline-none"
+              />
             </div>
-          ) : (
-            <div className="space-y-2">
-              <input placeholder="username" value={username} onChange={e=>setUsername(e.target.value)} className="border p-2 w-full" />
-              <div className="grid grid-cols-2 gap-2">
-                <input placeholder="First name" value={firstName} onChange={e=>setFirstName(e.target.value)} className="border p-2 w-full" />
-                <input placeholder="Last name" value={lastName} onChange={e=>setLastName(e.target.value)} className="border p-2 w-full" />
-              </div>
-              <input placeholder="email" value={email} onChange={e=>setEmail(e.target.value)} className="border p-2 w-full" />
-              <input placeholder="password" type="password" value={password} onChange={e=>setPassword(e.target.value)} className="border p-2 w-full" />
-              <select value={role} onChange={e=>setRole(e.target.value)} className="border p-2 w-full">
-                <option value="user">Customer</option>
-                <option value="seller">Seller</option>
-              </select>
-              <div className="flex gap-2">
-                <button onClick={doRegister} className="bg-green-600 text-white px-4 py-2 rounded">Register</button>
-                <button onClick={() => setIsRegister(false)} className="px-4 py-2 border rounded">Back</button>
-              </div>
-            </div>
-          )}
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => handleKeyPress(e, doRegister)}
+              className="border border-gray-300 rounded-lg px-4 py-2 w-full mt-3 mb-3 focus:ring-2 focus:ring-indigo-400 outline-none"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => handleKeyPress(e, doRegister)}
+              className="border border-gray-300 rounded-lg px-4 py-2 w-full mb-4 focus:ring-2 focus:ring-indigo-400 outline-none"
+            />
+            <button
+              onClick={doRegister}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:opacity-90 text-white w-full py-2 rounded-lg font-semibold transition-all shadow-md"
+            >
+              Register
+            </button>
+            <p className="text-center text-gray-500 mt-4 text-sm">
+              Already have an account?{" "}
+              <button
+                onClick={() => setIsRegister(false)}
+                className="text-indigo-600 font-semibold hover:underline"
+              >
+                Login
+              </button>
+            </p>
+          </div>
         </div>
       )}
     </div>
-  )
+  );
 }
