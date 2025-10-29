@@ -1,11 +1,14 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
 import { FaBars, FaTimes } from "react-icons/fa";
+import { gsap } from "gsap";
 
 export default function NavBar() {
   const { user, logout } = useContext(AuthContext);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+  const popupRef = useRef(null);
 
   const toggleMobileMenu = () => setMobileOpen((prev) => !prev);
 
@@ -19,6 +22,17 @@ export default function NavBar() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [mobileOpen]);
+
+  // Animate popup open
+  useEffect(() => {
+    if (showLogoutPopup) {
+      gsap.fromTo(
+        popupRef.current,
+        { opacity: 0, scale: 0.9 },
+        { opacity: 1, scale: 1, duration: 0.3, ease: "power2.out" }
+      );
+    }
+  }, [showLogoutPopup]);
 
   const links = [
     { to: "/", label: "Home", show: true },
@@ -61,7 +75,7 @@ export default function NavBar() {
                 {user.username || user.email}
               </span>
               <button
-                onClick={logout}
+                onClick={() => setShowLogoutPopup(true)}
                 className="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition-all duration-200"
               >
                 Logout
@@ -81,18 +95,17 @@ export default function NavBar() {
         <div className="md:hidden flex items-center">
           <button
             onClick={toggleMobileMenu}
-            className="text-2xl text-gray-700 z-50"
+            className="text-2xl text-white z-50"
           >
             {mobileOpen ? <FaTimes /> : <FaBars />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu with sliding animation */}
+      {/* Mobile Menu */}
       <div
         className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-40 transform transition-transform duration-300 ease-in-out
-          ${mobileOpen ? "translate-x-0" : "translate-x-full"}
-        `}
+          ${mobileOpen ? "translate-x-0" : "translate-x-full"}`}
       >
         <nav className="flex flex-col gap-3 px-6 py-6">
           {links
@@ -115,7 +128,7 @@ export default function NavBar() {
               </span>
               <button
                 onClick={() => {
-                  logout();
+                  setShowLogoutPopup(true);
                   setMobileOpen(false);
                 }}
                 className="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition-all duration-200"
@@ -135,12 +148,43 @@ export default function NavBar() {
         </nav>
       </div>
 
-      {/* Backdrop */}
+      {/* Backdrop for mobile menu */}
       {mobileOpen && (
         <div
           onClick={toggleMobileMenu}
           className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-30 transition-opacity"
         />
+      )}
+
+      {/* Logout Confirmation Popup */}
+      {showLogoutPopup && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] backdrop-blur-sm">
+          <div
+            ref={popupRef}
+            className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl p-6 w-[90%] max-w-sm text-center border border-white/40"
+          >
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              Are you sure you want to log out?
+            </h3>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => {
+                  logout();
+                  setShowLogoutPopup(false);
+                }}
+                className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-semibold transition-all shadow-md"
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => setShowLogoutPopup(false)}
+                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold transition-all shadow-md"
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </header>
   );
