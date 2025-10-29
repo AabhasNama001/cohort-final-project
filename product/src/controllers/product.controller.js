@@ -5,7 +5,13 @@ const { publishToQueue } = require("../broker/broker");
 
 async function createProduct(req, res) {
   try {
-    const { title, description, priceAmount, priceCurrency = "INR", stock } = req.body;
+    const {
+      title,
+      description,
+      priceAmount,
+      priceCurrency = "INR",
+      stock,
+    } = req.body;
     const seller = req.user.id;
 
     const price = {
@@ -23,11 +29,10 @@ async function createProduct(req, res) {
       price,
       seller,
       images,
-      stock
+      stock,
     });
 
     await publishToQueue("PRODUCT_SELLER_DASHBOARD.PRODUCT_CREATED", product);
-
     await publishToQueue("PRODUCT_NOTIFICATION.PRODUCT_CREATED", {
       email: req.user.email,
       productId: product._id,
@@ -45,7 +50,7 @@ async function createProduct(req, res) {
 }
 
 async function getProducts(req, res) {
-  const { q, minprice, maxprice, skip = 0, limit = 20 } = req.query;
+  const { q, minprice, maxprice, skip = 0, limit = 100 } = req.query;
 
   const filter = {};
   if (q) {
@@ -67,7 +72,7 @@ async function getProducts(req, res) {
   const products = await productModel
     .find(filter)
     .skip(Number(skip))
-    .limit(Math.min(Number(limit), 20));
+    .limit(Math.min(Number(limit), 100)); // ✅ now up to 100 products
 
   return res.status(200).json({
     message: "Products retrieved",
@@ -100,9 +105,7 @@ async function updateProduct(req, res) {
     });
   }
 
-  const product = await productModel.findOne({
-    _id: id,
-  });
+  const product = await productModel.findOne({ _id: id });
 
   if (!product) {
     return res.status(404).json({
@@ -117,7 +120,6 @@ async function updateProduct(req, res) {
   }
 
   const allowedUpdates = ["title", "description", "price"];
-
   for (const key of Object.keys(req.body)) {
     if (allowedUpdates.includes(key)) {
       if (key === "price" && typeof req.body.price === "object") {
@@ -132,6 +134,7 @@ async function updateProduct(req, res) {
       }
     }
   }
+
   await product.save();
   return res.status(200).json({
     message: "Product updated",
@@ -147,20 +150,21 @@ async function deleteProduct(req, res) {
       message: "Invalid Product id",
     });
   }
-  const product = await productModel.findOne({
-    _id: id,
-  });
+
+  const product = await productModel.findOne({ _id: id });
 
   if (!product) {
     return res.status(404).json({
       message: "Product not found",
     });
   }
+
   if (product.seller.toString() !== req.user.id) {
     return res.status(403).json({
       message: "Forbidden: You can only delete your own products.",
     });
   }
+
   await productModel.findOneAndDelete({ _id: id });
   return res.status(200).json({
     message: "Product deleted",
@@ -169,13 +173,12 @@ async function deleteProduct(req, res) {
 
 async function getProductsBySeller(req, res) {
   const seller = req.user;
-
-  const { skip = 0, limit = 20 } = req.query;
+  const { skip = 0, limit = 100 } = req.query;
 
   const products = await productModel
     .find({ seller: seller.id })
-    .skip(skip)
-    .limit(Math.min(limit, 20));
+    .skip(Number(skip))
+    .limit(Math.min(Number(limit), 100)); // ✅ also up to 100 here
 
   return res.status(200).json({
     data: products,
