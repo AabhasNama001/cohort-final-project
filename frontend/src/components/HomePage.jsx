@@ -140,7 +140,7 @@ export default function HomePage() {
             Discover the best deals on trending products. Your next favorite
             item is just a click away!
           </p>
-          <button className="bg-white text-indigo-700 font-semibold px-6 py-2 rounded-xl shadow hover:scale-105 transition-transform">
+          <button onClick={RedirectToProductsPage} className="bg-white text-indigo-700 font-semibold px-6 py-2 rounded-xl shadow hover:scale-105 transition-transform">
             Shop Now
           </button>
         </div>

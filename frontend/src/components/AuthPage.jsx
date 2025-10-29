@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 import { gsap } from "gsap";
+import { Eye, EyeOff } from "lucide-react"; // for hide/show icons
 
 export default function AuthPage() {
   const { login, register, logout, user } = useContext(AuthContext);
   const [isRegister, setIsRegister] = useState(false);
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
   // Fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState("user");
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -16,8 +19,9 @@ export default function AuthPage() {
 
   const loginRef = useRef(null);
   const registerRef = useRef(null);
+  const popupRef = useRef(null);
 
-  // Animate page transitions
+  // Animate transitions
   useEffect(() => {
     if (isRegister) {
       gsap.to(loginRef.current, {
@@ -53,6 +57,17 @@ export default function AuthPage() {
       });
     }
   }, [isRegister]);
+
+  // Animate popup open/close
+  useEffect(() => {
+    if (showLogoutPopup) {
+      gsap.fromTo(
+        popupRef.current,
+        { opacity: 0, scale: 0.9 },
+        { opacity: 1, scale: 1, duration: 0.3, ease: "power2.out" }
+      );
+    }
+  }, [showLogoutPopup]);
 
   const validateLogin = () => {
     if (!email || !password) {
@@ -103,7 +118,39 @@ export default function AuthPage() {
   };
 
   return (
-    <div className=" h-[80vh] md:h-[90vh] flex items-center justify-center px-4">
+    <div className="h-[80vh] md:h-[90vh] flex items-center justify-center px-4 relative">
+      {/* LOGOUT POPUP */}
+      {showLogoutPopup && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm">
+          <div
+            ref={popupRef}
+            className="bg-white rounded-2xl shadow-2xl p-6 w-[90%] max-w-sm text-center border border-gray-200"
+          >
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              Are you sure you want to log out?
+            </h3>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => {
+                  logout();
+                  setShowLogoutPopup(false);
+                }}
+                className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-semibold transition-all shadow-md"
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => setShowLogoutPopup(false)}
+                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold transition-all shadow-md"
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MAIN CARD */}
       {user ? (
         <div className="p-8 bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-md text-center border border-white/40">
           <h2 className="text-3xl font-bold mb-2 text-indigo-700">
@@ -114,7 +161,7 @@ export default function AuthPage() {
           </p>
           <p className="text-sm text-gray-500 mb-6">Role: {user.role}</p>
           <button
-            onClick={logout}
+            onClick={() => setShowLogoutPopup(true)}
             className="bg-gradient-to-r from-red-500 to-pink-500 hover:opacity-90 text-white px-6 py-2 rounded-xl font-semibold shadow-md transition-all"
           >
             Logout
@@ -135,14 +182,23 @@ export default function AuthPage() {
               onKeyDown={(e) => handleKeyPress(e, doLogin)}
               className="border border-gray-300 rounded-lg px-4 py-2 w-full mb-3 focus:ring-2 focus:ring-indigo-400 outline-none"
             />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => handleKeyPress(e, doLogin)}
-              className="border border-gray-300 rounded-lg px-4 py-2 w-full mb-3 focus:ring-2 focus:ring-indigo-400 outline-none"
-            />
+            <div className="relative mb-3">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => handleKeyPress(e, doLogin)}
+                className="border border-gray-300 rounded-lg px-4 py-2 w-full pr-10 focus:ring-2 focus:ring-indigo-400 outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
@@ -207,14 +263,23 @@ export default function AuthPage() {
               onKeyDown={(e) => handleKeyPress(e, doRegister)}
               className="border border-gray-300 rounded-lg px-4 py-2 w-full mt-3 mb-3 focus:ring-2 focus:ring-indigo-400 outline-none"
             />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => handleKeyPress(e, doRegister)}
-              className="border border-gray-300 rounded-lg px-4 py-2 w-full mb-4 focus:ring-2 focus:ring-indigo-400 outline-none"
-            />
+            <div className="relative mb-4">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => handleKeyPress(e, doRegister)}
+                className="border border-gray-300 rounded-lg px-4 py-2 w-full pr-10 focus:ring-2 focus:ring-indigo-400 outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
             <button
               onClick={doRegister}
               className="bg-gradient-to-r from-green-500 to-emerald-600 hover:opacity-90 text-white w-full py-2 rounded-lg font-semibold transition-all shadow-md"
