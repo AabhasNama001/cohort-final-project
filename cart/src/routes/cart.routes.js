@@ -5,30 +5,20 @@ const validation = require("../middlewares/validation.middleware");
 
 const router = express.Router();
 
-router.get(
-  "/",
-  createAuthMiddleware(["user", "seller"]),
-  cartController.getCart
-);
+router.get("/", createAuthMiddleware(["user","seller"]), cartController.getCart);
 
 router.post(
   "/items",
   validation.validateAddItemToCart,
-  createAuthMiddleware(["user", "seller"]),
+  createAuthMiddleware(["user","seller"]),
   cartController.addItemToCart
 );
 
 router.patch(
   "/items/:productId",
   validation.validateUpdateCartItem,
-  createAuthMiddleware(["user", "seller"]),
+  createAuthMiddleware(["user","seller"]),
   cartController.updateItemQuantity
-);
-
-router.delete(
-  "/items/:productId",
-  createAuthMiddleware(["user", "seller"]),
-  cartController.removeItem
 );
 
 module.exports = router;
