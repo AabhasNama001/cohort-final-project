@@ -19,7 +19,7 @@ export default function CartPage() {
   const navigate = useNavigate();
 
   const API_URL = "https://cohort-final-project-cart.onrender.com/api/cart";
-  const token = localStorage.getItem("token"); // ✅ ensure token included
+  const token = localStorage.getItem("token");
 
   // 🧠 Validate checkout form
   const validate = () => {
@@ -34,19 +34,25 @@ export default function CartPage() {
     return Object.keys(e).length === 0;
   };
 
-  // 🛍️ Update quantity (+ / -)
+  // 🧩 Handle quantity changes
   const updateQuantity = async (productId, newQty) => {
-    if (newQty < 1) return; // no zero quantity
     try {
-      await axios.patch(
-        `${API_URL}/items/${productId}`,
-        { qty: newQty },
-        {
+      if (newQty <= 0) {
+        await axios.delete(`${API_URL}/items/${productId}`, {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
-        }
-      );
-      await loadCart(); // refresh cart after update
+        });
+      } else {
+        await axios.patch(
+          `${API_URL}/items/${productId}`,
+          { qty: newQty },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
+          }
+        );
+      }
+      await loadCart();
     } catch (err) {
       console.error("Quantity update failed:", err);
       if (err.response?.status === 401) {
@@ -83,7 +89,7 @@ export default function CartPage() {
     0
   );
   const totalPrice = cart?.items?.reduce(
-    (sum, i) => sum + (i.product?.price?.amount ?? 0) * (i.quantity ?? 1),
+    (sum, i) => sum + (i.productId?.price ?? 0) * (i.quantity ?? 1),
     0
   );
 
@@ -96,7 +102,6 @@ export default function CartPage() {
 
         {cart.items && cart.items.length ? (
           <>
-            {/* Cart Items */}
             <ul className="divide-y divide-gray-200">
               {cart.items.map((i, idx) => (
                 <li
@@ -107,18 +112,18 @@ export default function CartPage() {
                   <div className="flex items-center gap-4">
                     <img
                       src={
-                        i.product?.image ||
+                        i.productId?.image ||
                         "https://via.placeholder.com/80?text=No+Image"
                       }
-                      alt={i.product?.title || "Product"}
+                      alt={i.productId?.title || "Product"}
                       className="w-20 h-20 object-cover rounded-lg border"
                     />
                     <div>
                       <div className="font-semibold text-gray-900 text-lg">
-                        {i.product?.title || "Untitled Product"}
+                        {i.productId?.title || "Untitled Product"}
                       </div>
                       <div className="text-gray-600 text-sm">
-                        ₹{i.product?.price?.amount ?? "-"}
+                        ₹{i.productId?.price ?? "-"}
                       </div>
                     </div>
                   </div>
@@ -127,7 +132,7 @@ export default function CartPage() {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() =>
-                        updateQuantity(i.productId, (i.quantity ?? 1) - 1)
+                        updateQuantity(i.productId._id, (i.quantity ?? 1) - 1)
                       }
                       className="px-3 py-1 bg-gray-200 rounded-md text-lg hover:bg-gray-300 transition"
                     >
@@ -136,7 +141,7 @@ export default function CartPage() {
                     <span className="font-medium">{i.quantity ?? 1}</span>
                     <button
                       onClick={() =>
-                        updateQuantity(i.productId, (i.quantity ?? 1) + 1)
+                        updateQuantity(i.productId._id, (i.quantity ?? 1) + 1)
                       }
                       className="px-3 py-1 bg-gray-200 rounded-md text-lg hover:bg-gray-300 transition"
                     >
@@ -147,9 +152,7 @@ export default function CartPage() {
                   {/* Price */}
                   <div className="font-semibold text-indigo-600">
                     ₹
-                    {(
-                      (i.product?.price?.amount ?? 0) * (i.quantity ?? 1)
-                    ).toFixed(2)}
+                    {((i.productId?.price ?? 0) * (i.quantity ?? 1)).toFixed(2)}
                   </div>
                 </li>
               ))}
@@ -173,7 +176,6 @@ export default function CartPage() {
                 </div>
               </div>
 
-              {/* Buttons */}
               <div className="flex gap-4">
                 <button
                   onClick={loadCart}
