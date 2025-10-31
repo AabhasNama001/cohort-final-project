@@ -53,6 +53,7 @@ export default function CartPage() {
     }
   };
 
+  
   return (
     <div className="min-h-screen bg-[#efefbf] p-8">
       <div className="max-w-4xl mx-auto bg-[#f5f5dd] backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-gray-100">
