@@ -21,7 +21,7 @@ export default function CartPage() {
   const API_URL = "https://cohort-final-project-cart.onrender.com/api/cart";
   const token = localStorage.getItem("token");
 
-  // 🧠 Validate checkout form
+  // ✅ Validate checkout form
   const validate = () => {
     const e = {};
     if (!form.street) e.street = "Street is required";
@@ -34,24 +34,18 @@ export default function CartPage() {
     return Object.keys(e).length === 0;
   };
 
-  // 🧩 Handle quantity changes
+  // ✅ Update quantity (+ / −)
   const updateQuantity = async (productId, newQty) => {
+    if (newQty < 1) return;
     try {
-      if (newQty <= 0) {
-        await axios.delete(`${API_URL}/items/${productId}`, {
+      await axios.patch(
+        `${API_URL}/items/${productId}`,
+        { qty: newQty },
+        {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
-        });
-      } else {
-        await axios.patch(
-          `${API_URL}/items/${productId}`,
-          { qty: newQty },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-            withCredentials: true,
-          }
-        );
-      }
+        }
+      );
       await loadCart();
     } catch (err) {
       console.error("Quantity update failed:", err);
@@ -61,7 +55,7 @@ export default function CartPage() {
     }
   };
 
-  // 🧾 Submit checkout order
+  // ✅ Submit checkout order
   const submitOrder = async () => {
     if (!validate()) return;
     setLoading(true);
@@ -83,13 +77,13 @@ export default function CartPage() {
     }
   };
 
-  // 🧮 Calculate totals
+  // ✅ Calculate totals
   const totalQuantity = cart?.items?.reduce(
     (sum, i) => sum + (i.quantity ?? 1),
     0
   );
   const totalPrice = cart?.items?.reduce(
-    (sum, i) => sum + (i.productId?.price ?? 0) * (i.quantity ?? 1),
+    (sum, i) => sum + (i.product?.price?.amount ?? 0) * (i.quantity ?? 1),
     0
   );
 
@@ -102,6 +96,7 @@ export default function CartPage() {
 
         {cart.items && cart.items.length ? (
           <>
+            {/* Cart Items */}
             <ul className="divide-y divide-gray-200">
               {cart.items.map((i, idx) => (
                 <li
@@ -112,18 +107,18 @@ export default function CartPage() {
                   <div className="flex items-center gap-4">
                     <img
                       src={
-                        i.productId?.image ||
-                        "https://via.placeholder.com/80?text=No+Image"
+                        i.product?.image ||
+                        "https://placehold.co/80x80?text=No+Image"
                       }
-                      alt={i.productId?.title || "Product"}
+                      alt={i.product?.title || "Product"}
                       className="w-20 h-20 object-cover rounded-lg border"
                     />
                     <div>
                       <div className="font-semibold text-gray-900 text-lg">
-                        {i.productId?.title || "Untitled Product"}
+                        {i.product?.title || "Untitled Product"}
                       </div>
                       <div className="text-gray-600 text-sm">
-                        ₹{i.productId?.price ?? "-"}
+                        ₹{i.product?.price?.amount ?? "-"}
                       </div>
                     </div>
                   </div>
@@ -132,7 +127,10 @@ export default function CartPage() {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() =>
-                        updateQuantity(i.productId._id, (i.quantity ?? 1) - 1)
+                        updateQuantity(
+                          i.productId || i.product?._id,
+                          (i.quantity ?? 1) - 1
+                        )
                       }
                       className="px-3 py-1 bg-gray-200 rounded-md text-lg hover:bg-gray-300 transition"
                     >
@@ -141,7 +139,10 @@ export default function CartPage() {
                     <span className="font-medium">{i.quantity ?? 1}</span>
                     <button
                       onClick={() =>
-                        updateQuantity(i.productId._id, (i.quantity ?? 1) + 1)
+                        updateQuantity(
+                          i.productId || i.product?._id,
+                          (i.quantity ?? 1) + 1
+                        )
                       }
                       className="px-3 py-1 bg-gray-200 rounded-md text-lg hover:bg-gray-300 transition"
                     >
@@ -152,7 +153,9 @@ export default function CartPage() {
                   {/* Price */}
                   <div className="font-semibold text-indigo-600">
                     ₹
-                    {((i.productId?.price ?? 0) * (i.quantity ?? 1)).toFixed(2)}
+                    {(
+                      (i.product?.price?.amount ?? 0) * (i.quantity ?? 1)
+                    ).toFixed(2)}
                   </div>
                 </li>
               ))}
@@ -176,6 +179,7 @@ export default function CartPage() {
                 </div>
               </div>
 
+              {/* Buttons */}
               <div className="flex gap-4">
                 <button
                   onClick={loadCart}
