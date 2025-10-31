@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { CartContext } from "../contexts/CartContext";
 import * as orderService from "../services/order.service";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function CartPage() {
   const { cart, loadCart } = useContext(CartContext);
@@ -17,6 +18,9 @@ export default function CartPage() {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
+  const API_URL = "https://cohort-final-project-cart.onrender.com/api/cart";
+
+  // 🧠 Validate checkout form
   const validate = () => {
     const e = {};
     if (!form.street) e.street = "Street is required";
@@ -29,14 +33,27 @@ export default function CartPage() {
     return Object.keys(e).length === 0;
   };
 
+  // 🛍️ Update quantity (+ / -)
+  const updateQuantity = async (productId, newQty) => {
+    if (newQty < 1) return; // no 0 qty
+    try {
+      await axios.patch(
+        `${API_URL}/items/${productId}`,
+        { qty: newQty },
+        { withCredentials: true }
+      );
+      await loadCart(); // refresh from backend
+    } catch (err) {
+      console.error("Quantity update failed:", err);
+    }
+  };
+
+  // 🧾 Submit checkout order
   const submitOrder = async () => {
     if (!validate()) return;
     setLoading(true);
     try {
-      // Send full payload required by backend
-      const payload = {
-        shippingAddress: { ...form },
-      };
+      const payload = { shippingAddress: { ...form } };
       await orderService.createOrder(payload);
       alert("✅ Order placed successfully!");
       setShowCheckout(false);
@@ -53,49 +70,116 @@ export default function CartPage() {
     }
   };
 
+  // 🧮 Calculate totals
+  const totalQuantity = cart?.items?.reduce(
+    (sum, i) => sum + (i.quantity ?? i.qty ?? 1),
+    0
+  );
+  const totalPrice = cart?.items?.reduce(
+    (sum, i) => sum + (i.product?.price?.amount ?? 0) * (i.quantity ?? 1),
+    0
+  );
+
   return (
     <div className="min-h-screen bg-[#efefbf] p-8">
-      <div className="max-w-4xl mx-auto bg-[#f5f5dd] backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-gray-100">
+      <div className="max-w-5xl mx-auto bg-[#f5f5dd] rounded-3xl shadow-2xl p-8 border border-gray-100">
         <h2 className="text-3xl font-extrabold text-gray-800 mb-8 text-center">
           🛒 Your Shopping Cart
         </h2>
 
         {cart.items && cart.items.length ? (
           <>
+            {/* Cart Items List */}
             <ul className="divide-y divide-gray-200">
               {cart.items.map((i, idx) => (
                 <li
                   key={i._id || idx}
                   className="py-4 px-4 flex justify-between items-center hover:bg-gray-50/70 rounded-xl transition-all duration-300"
                 >
-                  <div>
-                    <div className="font-semibold text-gray-900">
-                      {i.product?.title || i.productId}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      Qty: {i.quantity ?? i.qty ?? 1}
+                  {/* Left Section: Image + Info */}
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={
+                        i.product?.image ||
+                        "https://via.placeholder.com/80?text=No+Image"
+                      }
+                      alt={i.product?.title || "Product"}
+                      className="w-20 h-20 object-cover rounded-lg border"
+                    />
+                    <div>
+                      <div className="font-semibold text-gray-900 text-lg">
+                        {i.product?.title || "Untitled Product"}
+                      </div>
+                      <div className="text-gray-600 text-sm">
+                        ₹{i.product?.price?.amount ?? "-"}
+                      </div>
                     </div>
                   </div>
+
+                  {/* Middle: Quantity Controls */}
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() =>
+                        updateQuantity(i.productId, (i.quantity ?? 1) - 1)
+                      }
+                      className="px-3 py-1 bg-gray-200 rounded-md text-lg hover:bg-gray-300 transition"
+                    >
+                      −
+                    </button>
+                    <span className="font-medium">{i.quantity ?? 1}</span>
+                    <button
+                      onClick={() =>
+                        updateQuantity(i.productId, (i.quantity ?? 1) + 1)
+                      }
+                      className="px-3 py-1 bg-gray-200 rounded-md text-lg hover:bg-gray-300 transition"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  {/* Right: Item Total */}
                   <div className="font-semibold text-indigo-600">
-                    {i.product?.price?.amount ?? "-"}
+                    ₹
+                    {(
+                      (i.product?.price?.amount ?? 0) * (i.quantity ?? 1)
+                    ).toFixed(2)}
                   </div>
                 </li>
               ))}
             </ul>
 
-            <div className="mt-8 flex justify-end gap-4">
-              <button
-                onClick={loadCart}
-                className="px-5 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 transition-all duration-200"
-              >
-                Refresh
-              </button>
-              <button
-                onClick={() => setShowCheckout(true)}
-                className="px-6 py-2 rounded-xl font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md hover:shadow-lg transition-all duration-300"
-              >
-                Proceed to Checkout
-              </button>
+            {/* Summary + Buttons */}
+            <div className="mt-8 flex flex-col sm:flex-row justify-between items-center gap-6">
+              <div className="bg-white rounded-2xl shadow-md p-6 w-full sm:w-1/2 border">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">
+                  Order Summary
+                </h3>
+                <div className="flex justify-between mb-2 text-gray-700">
+                  <span>Total Items:</span>
+                  <span>{totalQuantity}</span>
+                </div>
+                <div className="flex justify-between mb-2 text-gray-700">
+                  <span>Total Price:</span>
+                  <span className="font-semibold text-indigo-600">
+                    ₹{totalPrice?.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  onClick={loadCart}
+                  className="px-5 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                >
+                  Refresh
+                </button>
+                <button
+                  onClick={() => setShowCheckout(true)}
+                  className="px-6 py-2 rounded-xl font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md hover:shadow-lg transition-all duration-300"
+                >
+                  Proceed to Checkout
+                </button>
+              </div>
             </div>
           </>
         ) : (
@@ -105,6 +189,7 @@ export default function CartPage() {
         )}
       </div>
 
+      {/* 🧾 Checkout Modal */}
       {showCheckout && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl relative animate-fadeInUp">
