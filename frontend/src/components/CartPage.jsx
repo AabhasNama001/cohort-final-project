@@ -19,6 +19,7 @@ export default function CartPage() {
   const navigate = useNavigate();
 
   const API_URL = "https://cohort-final-project-cart.onrender.com/api/cart";
+  const token = localStorage.getItem("token"); // ✅ ensure token included
 
   // 🧠 Validate checkout form
   const validate = () => {
@@ -35,16 +36,22 @@ export default function CartPage() {
 
   // 🛍️ Update quantity (+ / -)
   const updateQuantity = async (productId, newQty) => {
-    if (newQty < 1) return; // no 0 qty
+    if (newQty < 1) return; // no zero quantity
     try {
       await axios.patch(
         `${API_URL}/items/${productId}`,
         { qty: newQty },
-        { withCredentials: true }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        }
       );
-      await loadCart(); // refresh from backend
+      await loadCart(); // refresh cart after update
     } catch (err) {
       console.error("Quantity update failed:", err);
+      if (err.response?.status === 401) {
+        alert("Session expired. Please log in again.");
+      }
     }
   };
 
@@ -72,7 +79,7 @@ export default function CartPage() {
 
   // 🧮 Calculate totals
   const totalQuantity = cart?.items?.reduce(
-    (sum, i) => sum + (i.quantity ?? i.qty ?? 1),
+    (sum, i) => sum + (i.quantity ?? 1),
     0
   );
   const totalPrice = cart?.items?.reduce(
@@ -89,14 +96,14 @@ export default function CartPage() {
 
         {cart.items && cart.items.length ? (
           <>
-            {/* Cart Items List */}
+            {/* Cart Items */}
             <ul className="divide-y divide-gray-200">
               {cart.items.map((i, idx) => (
                 <li
                   key={i._id || idx}
                   className="py-4 px-4 flex justify-between items-center hover:bg-gray-50/70 rounded-xl transition-all duration-300"
                 >
-                  {/* Left Section: Image + Info */}
+                  {/* Product Info */}
                   <div className="flex items-center gap-4">
                     <img
                       src={
@@ -116,7 +123,7 @@ export default function CartPage() {
                     </div>
                   </div>
 
-                  {/* Middle: Quantity Controls */}
+                  {/* Quantity Controls */}
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() =>
@@ -137,7 +144,7 @@ export default function CartPage() {
                     </button>
                   </div>
 
-                  {/* Right: Item Total */}
+                  {/* Price */}
                   <div className="font-semibold text-indigo-600">
                     ₹
                     {(
@@ -148,7 +155,7 @@ export default function CartPage() {
               ))}
             </ul>
 
-            {/* Summary + Buttons */}
+            {/* Order Summary */}
             <div className="mt-8 flex flex-col sm:flex-row justify-between items-center gap-6">
               <div className="bg-white rounded-2xl shadow-md p-6 w-full sm:w-1/2 border">
                 <h3 className="text-xl font-bold text-gray-800 mb-4">
@@ -166,6 +173,7 @@ export default function CartPage() {
                 </div>
               </div>
 
+              {/* Buttons */}
               <div className="flex gap-4">
                 <button
                   onClick={loadCart}
@@ -189,7 +197,7 @@ export default function CartPage() {
         )}
       </div>
 
-      {/* 🧾 Checkout Modal */}
+      {/* Checkout Modal */}
       {showCheckout && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl relative animate-fadeInUp">
