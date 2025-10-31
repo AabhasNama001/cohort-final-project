@@ -1,5 +1,6 @@
 const cartModel = require("../models/cart.model");
 
+
 async function getCart(req, res) {
   const user = req.user;
 
