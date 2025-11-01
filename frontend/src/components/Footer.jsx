@@ -1,6 +1,11 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaFacebookF, FaTwitter, FaInstagram } from "react-icons/fa";
+
+const navigate = useNavigate();
+const HomeHandler = () => {
+  navigate("/");
+};
 
 export default function Footer() {
   return (
@@ -8,7 +13,10 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-6 md:px-0 flex flex-col md:flex-row justify-between gap-10 md:gap-0">
         {/* Logo */}
         <div className="flex flex-col items-start md:items-start">
-          <h1 className="text-2xl bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text font-bold mb-4">
+          <h1
+            onClick={HomeHandler}
+            className="text-2xl cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text font-bold mb-4"
+          >
             ShopEase
           </h1>
           <p className="text-gray-400 max-w-xs">
