@@ -1,0 +1,1 @@
+import{j as e}from"./index-f7a2e862.js";function t(){return e("div",{className:"p-4 bg-white rounded shadow",children:"Payment page (integration with payment microservice TBD)"})}export{t as default};
