@@ -2,12 +2,12 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaFacebookF, FaTwitter, FaInstagram } from "react-icons/fa";
 
-const navigate = useNavigate();
-const HomeHandler = () => {
-  navigate("/");
-};
-
 export default function Footer() {
+  const navigate = useNavigate();
+  const HomeHandler = () => {
+    navigate("/");
+  };
+
   return (
     <footer className="bg-black text-gray-300 pt-10 pb-6">
       <div className="max-w-6xl mx-auto px-6 md:px-0 flex flex-col md:flex-row justify-between gap-10 md:gap-0">
