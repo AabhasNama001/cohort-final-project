@@ -2,80 +2,51 @@ const { tool } = require("@langchain/core/tools");
 const axios = require("axios");
 const { z } = require("zod");
 
-// Standardize error handling to be reused across tools
+// Helper for consistent error reporting
 const handleApiError = (toolName, err) => {
   console.error(`${toolName} error:`, err?.response?.data || err?.message);
   return JSON.stringify({
     ok: false,
-    status: err?.response?.status,
-    error: err?.response?.data || err?.message || "Unknown error occurred",
-    
+    error: err?.response?.data || err?.message || "Internal Tool Error",
   });
 };
 
-/**
- * Search for products using semantic search capabilities.
- */
 const searchProduct = tool(
   async ({ query, token }) => {
     try {
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
       const response = await axios.get(
         `https://cohort-final-project-product.onrender.com/api/products`,
         { params: { q: query }, headers }
       );
-
-      // 2026 Best Practice: Return a clear status and the raw data array
-      return JSON.stringify({
-        ok: true,
-        count: response.data?.length || 0,
-        products: response.data,
-      });
+      return JSON.stringify({ ok: true, products: response.data });
     } catch (err) {
       return handleApiError("searchProduct", err);
     }
   },
   {
     name: "searchProduct",
-    description:
-      "Search for products by name, category, or description. Returns a list of matching product objects.",
+    description: "Search for products. Returns an array of product objects.",
     schema: z.object({
-      query: z
-        .string()
-        .min(1)
-        .describe("The keyword or product name to search for"),
-      token: z
-        .string()
-        .optional()
-        .describe("Auth token for personalized results"),
+      query: z.string().min(1).describe("Search keyword"),
+      token: z.string().optional().describe("User auth token"),
     }),
   }
 );
 
-/**
- * Add a specific product to the user's cart.
- */
 const addProductToCart = tool(
   async ({ productId, qty = 1, token }) => {
-    if (!token) {
-      return JSON.stringify({
-        ok: false,
-        error: "Authentication required to add items to cart.",
-      });
-    }
-
     try {
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const response = await axios.post(
         `https://cohort-final-project-cart.onrender.com/api/cart/items`,
         { productId, qty },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers }
       );
-
       return JSON.stringify({
         ok: true,
-        message: `Successfully added ${qty} unit(s) of product ${productId} to your cart.`,
-        cartItem: response.data, // Return the new item state for the frontend
+        message: `Added ${qty} items`,
+        data: response.data,
       });
     } catch (err) {
       return handleApiError("addProductToCart", err);
@@ -83,19 +54,14 @@ const addProductToCart = tool(
   },
   {
     name: "addProductToCart",
-    description:
-      "Adds a specific quantity of a product to the user's shopping cart. Requires a valid user token.",
+    description: "Adds a product to the cart. Requires productId and token.",
     schema: z.object({
-      productId: z.string().describe("The unique ID of the product"),
-      qty: z
-        .number()
-        .int()
-        .positive()
-        .default(1)
-        .describe("Number of items to add"),
+      productId: z.string().describe("The ID of the product"),
+      // FIX: Using .min(1) instead of .positive() to avoid 'exclusiveMinimum' error
+      qty: z.number().int().min(1).default(1).describe("Quantity to add"),
       token: z
         .string()
-        .describe("The user's bearer token (mandatory for this action)"),
+        .describe("User auth token is required for cart actions"),
     }),
   }
 );
