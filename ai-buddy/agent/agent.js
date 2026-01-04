@@ -1,58 +1,61 @@
 const { StateGraph, MessagesAnnotation } = require("@langchain/langgraph");
 const { ChatGoogleGenerativeAI } = require("@langchain/google-genai");
-const { ToolMessage } = require("@langchain/core/messages");
 const tools = require("./tools");
+const { ToolMessage, AIMessage } = require("@langchain/core/messages");
 
-// Use stable model string for 2026
 const model = new ChatGoogleGenerativeAI({
-  model: "gemini-1.5-flash",
-  temperature: 0.3, // Lower temperature for more reliable tool calling
+  model: "gemini-2.0-flash",
+  temperature: 0.5,
 });
 
-// Bind tools to the model
-const modelWithTools = model.bindTools([
-  tools.searchProduct,
-  tools.addProductToCart,
-]);
-
 const graph = new StateGraph(MessagesAnnotation)
-  .addNode("chat", async (state) => {
-    // Invoke the model with current message history
-    const response = await modelWithTools.invoke(state.messages);
-
-    // Return to merge the AI message into state
-    return { messages: [response] };
-  })
   .addNode("tools", async (state, config) => {
     const lastMessage = state.messages[state.messages.length - 1];
-    const toolCalls = lastMessage.tool_calls || [];
-
-    const toolResults = await Promise.all(
-      toolCalls.map(async (call) => {
+    const toolsCall = lastMessage.tool_calls;
+    const toolCallResults = await Promise.all(
+      toolsCall.map(async (call) => {
         const tool = tools[call.name];
-        if (!tool) throw new Error(`Tool ${call.name} not found`);
+        if (!tool) {
+          throw new Error(`Tool ${call.name} not found`);
+        }
+        const toolInput = call.args;
 
-        const result = await tool.func({
-          ...call.args,
-          token: config.metadata.token, // Passing token from frontend metadata
+        console.log("Invoking tool:", call.name, "with input:", call);
+
+        const toolResult = await tool.func({
+          ...toolInput,
+          token: config.metadata.token,
         });
 
         return new ToolMessage({
-          content: result,
-          tool_call_id: call.id,
+          content: toolResult,
+          name: call.name,
         });
       })
     );
+    state.messages.push(...toolCallResults);
+    return state;
+  })
+  .addNode("chat", async (state, config) => {
+    const response = await model.invoke(state.messages, {
+      tools: [tools.searchProduct, tools.addProductToCart],
+    });
 
-    return { messages: toolResults };
+    state.messages.push(
+      new AIMessage({ content: response.text, tool_calls: response.tool_calls })
+    );
+
+    return state;
   })
   .addEdge("__start__", "chat")
-  .addConditionalEdges("chat", (state) => {
+  .addConditionalEdges("chat", async (state) => {
     const lastMessage = state.messages[state.messages.length - 1];
-    if (lastMessage.tool_calls?.length > 0) {
+
+    if (lastMessage.tool_calls && lastMessage.tool_calls.length > 0) {
       return "tools";
+    } else {
+      return "__end__";
     }
-    return "__end__";
   })
   .addEdge("tools", "chat");
 
